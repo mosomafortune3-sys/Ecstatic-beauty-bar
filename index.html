@@ -193,112 +193,139 @@ footer{background:#000;padding:30px;text-align:center;color:#aaa;}
 
 <script>
 (() => {
-  const OPEN_TIME="08:00", CLOSE_TIME="18:00";
-  const nameInput=document.getElementById("name"), phoneInput=document.getElementById("phone"),
-        serviceInput=document.getElementById("service"), dateInput=document.getElementById("date"),
-        timeInput=document.getElementById("time"), bookBtn=document.getElementById("bookBtn");
-  const adminCodeInput=document.getElementById("adminCode"), adminPanel=document.getElementById("adminPanel");
-  const adminTableBody=document.getElementById("bookingTableBody");
+  const OPEN_TIME = "08:00", CLOSE_TIME = "18:00";
+  const nameInput = document.getElementById("name"), phoneInput = document.getElementById("phone"),
+        serviceInput = document.getElementById("service"), dateInput = document.getElementById("date"),
+        timeInput = document.getElementById("time"), bookBtn = document.getElementById("bookBtn");
+  const adminCodeInput = document.getElementById("adminCode"), adminPanel = document.getElementById("adminPanel");
+  const adminTableBody = document.getElementById("bookingTableBody");
 
   // NAV & scroll
-  const sections=document.querySelectorAll("section"), navItems=document.querySelectorAll("nav ul li");
-  window.addEventListener("scroll",()=>{
-    const scrollPos=window.scrollY+100;
-    sections.forEach((sec,i)=>{
-      if(scrollPos>=sec.offsetTop && scrollPos<sec.offsetTop+sec.offsetHeight){
-        navItems.forEach(n=>n.classList.remove("active")); navItems[i].classList.add("active");
+  const sections = document.querySelectorAll("section"), navItems = document.querySelectorAll("nav ul li");
+  window.addEventListener("scroll", () => {
+    const scrollPos = window.scrollY + 100;
+    sections.forEach((sec, i) => {
+      if (scrollPos >= sec.offsetTop && scrollPos < sec.offsetTop + sec.offsetHeight) {
+        navItems.forEach(n => n.classList.remove("active"));
+        if (navItems[i]) navItems[i].classList.add("active");
       }
     });
   });
-  window.scrollToSection=id=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
-  window.openWhatsApp=()=>window.open("https://wa.me/27728125469","_blank");
+
+  window.scrollToSection = id => document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  window.openWhatsApp = () => window.open("https://wa.me/27728125469", "_blank");
 
   // Service click
-  document.querySelectorAll(".card").forEach(c=>c.addEventListener("click",()=>{serviceInput.value=c.dataset.service; scrollToSection("booking");}));
+  document.querySelectorAll(".card").forEach(c => c.addEventListener("click", () => { serviceInput.value = c.dataset.service; window.scrollToSection('booking'); }));
 
   // Date & time
-  const today=new Date().toISOString().split("T")[0];
-  dateInput.value=today; dateInput.min=today; timeInput.min=OPEN_TIME; timeInput.max=CLOSE_TIME;
+  const today = new Date().toISOString().split("T")[0];
+  if (dateInput) { dateInput.value = today; dateInput.min = today; }
+  if (timeInput) { timeInput.min = OPEN_TIME; timeInput.max = CLOSE_TIME; }
 
   // Booking submission
-  window.submitBooking=e=>{
+  window.submitBooking = e => {
     e.preventDefault();
+    if (!nameInput || !phoneInput || !serviceInput || !dateInput || !timeInput) return;
+
     bookBtn.classList.add("loading");
-    bookBtn.innerHTML="⏳ Processing...";
-    const booking={
-      name:nameInput.value, phone:phoneInput.value, service:serviceInput.value,
-      date:dateInput.value, time:timeInput.value, timestamp:new Date().toISOString()
+    bookBtn.innerHTML = "⏳ Processing...";
+
+    const booking = {
+      name: nameInput.value.trim(),
+      phone: phoneInput.value.trim(),
+      service: serviceInput.value,
+      date: dateInput.value,
+      time: timeInput.value,
+      timestamp: new Date().toISOString()
     };
-    let bookings=JSON.parse(localStorage.getItem("bookings")||"[]");
-    const conflict=bookings.some(b=>b.date===booking.date && b.time===booking.time);
-    if(conflict){alert("⏰ This slot is already booked."); bookBtn.classList.remove("loading"); bookBtn.innerHTML='<i class="fab fa-whatsapp"></i> Confirm & Pay'; return;}
+
+    let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+
+    const conflict = bookings.some(b => b.date === booking.date && b.time === booking.time);
+    if (conflict) {
+      alert("⏰ This slot is already booked.");
+      bookBtn.classList.remove("loading");
+      bookBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Confirm & Pay';
+      return;
+    }
+
     bookings.push(booking);
-    localStorage.setItem("bookings",JSON.stringify(bookings));
-    window.open(`https://wa.me/27728125469?text=${encodeURIComponent(`Hello Ecstatic Beauty Bar 💎\n📌 New Booking\n👤 Name: ${booking.name}\n📞 Phone: ${booking.phone}\n💅 Service: ${booking.service}\n📅 Date: ${booking.date}\n⏰ Time: ${booking.time}`)}`,"_blank");
-    setTimeout(()=>{bookBtn.classList.remove("loading"); bookBtn.innerHTML='<i class="fab fa-whatsapp"></i> Confirm & Pay';},1000);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+
+    // Compose a complete, encoded WhatsApp message
+    const message = `Hello Ecstatic Beauty Bar 💎\n📌 New Booking\n👤 Name: ${booking.name}\n📞 Phone: ${booking.phone}\n💅 Service: ${booking.service}\n📅 Date: ${booking.date}\n⏰ Time: ${booking.time}`;
+
+    window.open(`https://wa.me/27728125469?text=${encodeURIComponent(message)}`, "_blank");
+
+    setTimeout(() => {
+      bookBtn.classList.remove("loading");
+      bookBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Confirm & Pay';
+    }, 1000);
   };
 
   // Admin logic
-  const ADMIN_CODE="noloBoss";
-  window.openAdmin=()=>{
-    if(adminCodeInput.value===ADMIN_CODE){
-      adminPanel.style.display="block"; adminCodeInput.value="";
+  const ADMIN_CODE = "noloBoss";
+  window.openAdmin = () => {
+    if (adminCodeInput.value === ADMIN_CODE) {
+      adminPanel.style.display = "block"; adminCodeInput.value = "";
       updateAdminTable();
     } else alert("❌ Wrong admin code");
   };
 
-  window.clearBookings=()=>{
-    if(confirm("Delete all bookings?")){localStorage.removeItem("bookings"); updateAdminTable();}
+  window.clearBookings = () => {
+    if (confirm("Delete all bookings?")) { localStorage.removeItem("bookings"); updateAdminTable(); }
   };
 
-  function updateAdminTable(){
-    const bookings=JSON.parse(localStorage.getItem("bookings")||"[]");
-    adminTableBody.innerHTML="";
-    bookings.forEach((b,i)=>{
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${b.name}</td><td>${b.phone}</td><td>${b.service}</td><td>${b.date}</td><td>${b.time}</td>
-      <td><button onclick="deleteBooking(${i})">Delete</button></td>`;
+  function updateAdminTable() {
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    adminTableBody.innerHTML = "";
+    bookings.forEach((b, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${b.name}</td><td>${b.phone}</td><td>${b.service}</td><td>${b.date}</td><td>${b.time}</td>` +
+        `<td><button onclick="deleteBooking(${i})">Delete</button></td>`;
       adminTableBody.appendChild(tr);
     });
   }
-  window.deleteBooking=i=>{
-    let bookings=JSON.parse(localStorage.getItem("bookings")||"[]");
-    bookings.splice(i,1);
-    localStorage.setItem("bookings",JSON.stringify(bookings));
+
+  window.deleteBooking = i => {
+    let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    bookings.splice(i, 1);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
     updateAdminTable();
   };
 
-  window.exportCSV=()=>{
-    const bookings=JSON.parse(localStorage.getItem("bookings")||"[]");
-    if(!bookings.length){alert("No bookings to export"); return;}
-    const csvContent="data:text/csv;charset=utf-8,"+
-      ["Name,Phone,Service,Date,Time"].join(",")+"\n"+
-      bookings.map(b=>`${b.name},${b.phone},${b.service},${b.date},${b.time}`).join("\n");
-    const encodedUri=encodeURI(csvContent);
-    const link=document.createElement("a");
-    link.setAttribute("href",encodedUri); link.setAttribute("download","bookings.csv");
+  window.exportCSV = () => {
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    if (!bookings.length) { alert("No bookings to export"); return; }
+    const csvContent = "data:text/csv;charset=utf-8," +
+      ["Name,Phone,Service,Date,Time"].join(",") + "\n" +
+      bookings.map(b => `${b.name},${b.phone},${b.service},${b.date},${b.time}`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri); link.setAttribute("download", "bookings.csv");
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
   // Hidden admin input trigger
-  document.getElementById("logo").addEventListener("click",()=>{document.getElementById("adminInput").style.display="block";});
+  document.getElementById("logo").addEventListener("click", () => { document.getElementById("adminInput").style.display = "block"; });
 
-  // Pause videos out of view
-  const videos=document.querySelectorAll(".card video");
-  const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{!e.isIntersecting?e.target.pause():e.target.play();});},{threshold:0.5});
-  videos.forEach(v=>observer.observe(v));
+  // Pause videos out of view (handles the main video as well)
+  const videos = document.querySelectorAll("video");
+  const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.target.tagName === 'VIDEO') { !e.isIntersecting ? e.target.pause() : e.target.play(); } }); }, { threshold: 0.5 });
+  videos.forEach(v => observer.observe(v));
 
   // Mission section fade-in
   const missionSection = document.getElementById("mission");
-  const missionObserver = new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
+  const missionObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
         entry.target.classList.add("visible");
         missionObserver.unobserve(entry.target);
       }
     });
-  },{threshold:0.3});
-  missionObserver.observe(missionSection);
+  }, { threshold: 0.3 });
+  if (missionSection) missionObserver.observe(missionSection);
 
 })();
 </script>
