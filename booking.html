@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Book Appointment - Ecstatic Beauty Bar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0b0b">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+:root{
+  --gold:#d4af37;
+  --gold-soft:#f5d76e;
+  --dark:#0b0b0b;
+  --form-dark:#1a1a1a; /* Dark grey for form */
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:var(--dark);color:#fff;}
+
+/* NAV */
+nav{
+  position:fixed;
+  top:0;width:100%;
+  padding:15px 30px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:rgba(0,0,0,0.95);
+  z-index:1000;
+}
+nav ul{
+  display:flex;
+  gap:20px;
+  list-style:none;
+}
+nav ul li a{
+  color:#fff;text-decoration:none;
+  display:flex;align-items:center;
+  gap:6px;font-size:14px;
+}
+nav ul li a:hover{color:var(--gold);}
+
+/* PAGE */
+.page{padding-top:100px; text-align:center;}
+
+/* BOOKING FORM */
+.booking-form{
+  max-width:420px;
+  margin:auto;
+  background:var(--form-dark); /* Dark grey form */
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+.input-box{position:relative;margin-bottom:15px;}
+.input-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);}
+.input-box input,.input-box select{
+  width:100%;
+  padding:14px 14px 14px 42px;
+  border:1px solid #444;
+  border-radius:6px;
+  background:#222;
+  color:#fff;
+}
+.input-box input::placeholder,
+.input-box select option{color:#aaa;}
+.btn-book{
+  width:100%;
+  padding:14px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-soft));
+  border:none;font-weight:600;
+  cursor:pointer;
+  color:#000;
+}
+.btn-book.loading{opacity:.7;pointer-events:none;}
+
+/* Admin panel */
+#adminPanel{padding:15px;border-radius:10px;background:#111;color:#0ff;box-shadow:0 0 10px #0ff;max-width:1000px;margin:20px auto;display:none;}
+#adminPanel table{width:100%;border-collapse:collapse;margin-top:10px;}
+#adminPanel th, #adminPanel td{border:1px solid #0ff;padding:8px;text-align:center;}
+#adminPanel th{background:#222;}
+#adminPanel button{margin:2px;padding:5px 8px;cursor:pointer;}
+#adminInput{display:none;margin-top:10px;text-align:center;}
+
+/* Buttons */
+.booking-btn{display:block;margin:30px auto;padding:14px 28px;font-weight:600;background:var(--gold);color:#000;border:none;border-radius:6px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+    <li><a href="service.html"><i class="fas fa-concierge-bell"></i> Services</a></li>
+    <li><a href="booking.html"><i class="fas fa-calendar-check"></i> Book</a></li>
+    <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <h3>Book Appointment</h3>
+  <form class="booking-form" onsubmit="submitBooking(event)">
+    <div class="input-box"><i class="fas fa-user"></i><input id="name" placeholder="Your Name" required></div>
+    <div class="input-box"><i class="fas fa-phone"></i><input id="phone" placeholder="Phone Number" required></div>
+    <div class="input-box"><i class="fas fa-spa"></i>
+      <select id="service" required>
+        <option value="">Select Service</option>
+        <option>Hair Styling</option>
+        <option>Nails</option>
+        <option>Makeup</option>
+        <option>Lashes & Brows</option>
+      </select>
+    </div>
+    <div class="input-box"><i class="fas fa-calendar-day"></i><input type="date" id="date" required></div>
+    <div class="input-box"><i class="fas fa-clock"></i><input type="time" id="time" required></div>
+    <button class="btn-book" id="bookBtn"><i class="fab fa-whatsapp"></i> Confirm & Pay</button>
+  </form>
+
+  <!-- Hidden admin input -->
+  <div id="adminInput">
+    <input type="password" id="adminCode" placeholder="Enter Admin Code">
+    <button class="booking-btn" onclick="openAdmin()">Enter</button>
+  </div>
+
+  <!-- Admin panel -->
+  <div id="adminPanel">
+    <h3>🔒 Admin Panel</h3>
+    <button onclick="clearBookings()">🗑 Clear All Bookings</button>
+    <button onclick="exportCSV()">📥 Export CSV</button>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Phone</th><th>Service</th><th>Date</th><th>Time</th><th>Action</th></tr>
+      </thead>
+      <tbody id="bookingTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Button to go to Contact Page -->
+  <button class="booking-btn" onclick="goToContact()"><i class="fas fa-envelope"></i> Go to Contact</button>
+</div>
+
+<script>
+(() => {
+  const OPEN_TIME = "08:00", CLOSE_TIME = "18:00";
+  const nameInput = document.getElementById("name"), phoneInput = document.getElementById("phone"),
+        serviceInput = document.getElementById("service"), dateInput = document.getElementById("date"),
+        timeInput = document.getElementById("time"), bookBtn = document.getElementById("bookBtn");
+  const adminCodeInput = document.getElementById("adminCode"), adminPanel = document.getElementById("adminPanel");
+  const adminTableBody = document.getElementById("bookingTableBody");
+
+  // Set default date & time limits
+  const today = new Date().toISOString().split("T")[0];
+  if(dateInput){ dateInput.value = today; dateInput.min = today; }
+  if(timeInput){ timeInput.min = OPEN_TIME; timeInput.max = CLOSE_TIME; }
+
+  // Booking submission
+  window.submitBooking = e => {
+    e.preventDefault();
+    if(!nameInput || !phoneInput || !serviceInput || !dateInput || !timeInput || !bookBtn) return;
+
+    bookBtn.classList.add("loading");
+    bookBtn.innerHTML = "⏳ Processing...";
+
+    const booking = {
+      name: nameInput.value.trim(),
+      phone: phoneInput.value.trim(),
+      service: serviceInput.value,
+      date: dateInput.value,
+      time: timeInput.value,
+      timestamp: new Date().toISOString()
+    };
+
+    let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+
+    const conflict = bookings.some(b => b.date === booking.date && b.time === booking.time);
+    if(conflict){
+      alert("⏰ This slot is already booked.");
+      bookBtn.classList.remove("loading");
+      bookBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Confirm & Pay';
+      return;
+    }
+
+    bookings.push(booking);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+
+    const message = `Hello Ecstatic Beauty Bar 💎
+📌 New Booking
+👤 Name: ${booking.name}
+📞 Phone: ${booking.phone}
+💅 Service: ${booking.service}
+📅 Date: ${booking.date}
+⏰ Time: ${booking.time}
+`;
+
+    window.open(`https://wa.me/27728125469?text=${encodeURIComponent(message)}`, "_blank");
+
+    setTimeout(() => {
+      bookBtn.classList.remove("loading");
+      bookBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Confirm & Pay';
+    }, 1000);
+  };
+
+  // Admin logic
+  const ADMIN_CODE = "noloBoss";
+  window.openAdmin = () => {
+    if(!adminCodeInput) return;
+    if(adminCodeInput.value === ADMIN_CODE){
+      if(adminPanel) adminPanel.style.display = "block";
+      adminCodeInput.value = "";
+      updateAdminTable();
+    } else alert("❌ Wrong admin code");
+  };
+
+  window.clearBookings = () => {
+    if(confirm("Delete all bookings?")){
+      localStorage.removeItem("bookings"); 
+      updateAdminTable();
+    }
+  };
+
+  function updateAdminTable(){
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    if(!adminTableBody) return;
+    adminTableBody.innerHTML = "";
+    bookings.forEach((b,i)=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${b.name}</td><td>${b.phone}</td><td>${b.service}</td><td>${b.date}</td><td>${b.time}</td>`+
+                     `<td><button onclick="deleteBooking(${i})">Delete</button></td>`;
+      adminTableBody.appendChild(tr);
+    });
+  }
+
+  window.deleteBooking = i => {
+    let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    bookings.splice(i,1);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+    updateAdminTable();
+  };
+
+  window.exportCSV = () => {
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    if(!bookings.length){ alert("No bookings to export"); return; }
+    const csvContent = "data:text/csv;charset=utf-8,"+
+      ["Name,Phone,Service,Date,Time"].join(",")+"\n"+
+      bookings.map(b=>`${b.name},${b.phone},${b.service},${b.date},${b.time}`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri); 
+    link.setAttribute("download", "bookings.csv");
+    document.body.appendChild(link); 
+    link.click(); 
+    document.body.removeChild(link);
+  };
+
+  // Hidden admin input trigger
+  const logo = document.getElementById("logo");
+  if(logo) logo.addEventListener("click", () => { 
+    const adminInput = document.getElementById("adminInput"); 
+    if(adminInput) adminInput.style.display = "block"; 
+  });
+
+})();
+
+// Button to go to Contact page
+function goToContact(){
+  window.location.href = "contact.html";
+}
+</script>
+
+</body>
+</html>

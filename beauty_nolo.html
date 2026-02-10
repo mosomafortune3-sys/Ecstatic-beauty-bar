@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ecstatic Beauty Bar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0b0b">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --gold:#d4af37;
+  --gold-soft:#f5d76e;
+  --dark:#0b0b0b;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#0b0b0b;color:#fff;}
+nav{position:fixed;top:0;width:100%;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.95);z-index:1000;}
+nav h1{font-family:'Playfair Display',serif;color:var(--gold);font-size:22px;cursor:pointer;}
+nav ul{display:flex;gap:20px;list-style:none;}
+nav ul li{cursor:pointer;font-size:14px;position:relative;}
+nav ul li.active::after{content:'';position:absolute;bottom:-5px;left:0;width:100%;height:2px;background:var(--gold);}
+.hero{height:100vh;background:linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.75)),url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9') center/cover;display:flex;align-items:center;justify-content:center;text-align:center;}
+.hero h2{font-family:'Playfair Display',serif;font-size:42px;color:var(--gold);}
+.hero p{margin:15px 0 30px;color:#eee;}
+.btn{padding:12px 26px;border:1px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer;margin:5px;}
+.btn:hover{background:var(--gold);color:#000;}
+section{padding:90px 25px;max-width:1100px;margin:auto;}
+section h3{text-align:center;font-family:'Playfair Display',serif;color:var(--gold);margin-bottom:40px;}
+.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.card{border:1px solid #222;border-radius:8px;overflow:hidden;cursor:pointer;transition:.3s;}
+.card:hover{border-color:var(--gold);transform:scale(1.03);}
+.card video{width:100%;height:260px;object-fit:cover;}
+.card p{text-align:center;padding:10px;font-weight:500;}
+.booking{background:#f5efe6;color:#000;border-radius:10px;}
+.booking-form{max-width:420px;margin:auto;}
+.input-box{position:relative;margin-bottom:15px;}
+.input-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);}
+.input-box input,.input-box select{width:100%;padding:14px 14px 14px 42px;border:1px solid #ccc;border-radius:6px;}
+.btn-book{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-soft));border:none;font-weight:600;cursor:pointer;}
+.btn-book.loading{opacity:.7;pointer-events:none;}
+
+/* Mission Section */
+#mission{padding:60px 25px; background:#111; color:#fff; opacity:0; transform:translateY(40px); transition: all 1s ease;}
+#mission.visible{opacity:1; transform:translateY(0);}
+#mission h3{text-align:center;font-family:'Playfair Display',serif;color:var(--gold);margin-bottom:30px;}
+#mission p{font-size:16px;text-align:center;max-width:800px;margin:auto;line-height:1.6;font-weight:500;}
+
+.main-video {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 40px auto;
+}
+
+.main-video video {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.services {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.card img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.card p {
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 500;
+}
+footer{background:#000;padding:30px;text-align:center;color:#aaa;}
+#adminPanel{padding:15px;border-radius:10px;background:#111;color:#0ff;box-shadow:0 0 10px #0ff;max-width:1000px;margin:20px auto;display:none;}
+#adminPanel table{width:100%;border-collapse:collapse;margin-top:10px;}
+#adminPanel th, #adminPanel td{border:1px solid #0ff;padding:8px;text-align:center;}
+#adminPanel th{background:#222;}
+#adminPanel button{margin:2px;padding:5px 8px;cursor:pointer;}
+#adminInput{display:none;margin-top:10px;text-align:center;}
+@media(max-width:768px){
+  #adminPanel table{display:block;overflow-x:auto;}
+  #adminPanel th,#adminPanel td{white-space:nowrap;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <h1 id="logo">Ecstatic Beauty Bar</h1>
+  <ul>
+    <li onclick="scrollToSection('services')">Services</li>
+    <li onclick="scrollToSection('booking')">Book</li>
+    <li onclick="scrollToSection('contact')">Contact</li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div>
+    <h2>Ecstatic Beauty Bar</h2>
+    <p>Bold Beauty · Luxury Care</p>
+    <button class="btn" onclick="scrollToSection('booking')">Book Appointment</button>
+    <button class="btn" onclick="openWhatsApp()">WhatsApp Us</button>
+  </div>
+</div>
+
+<!-- Our Mission Section -->
+<section id="mission">
+  <h3>Our Mission</h3>
+  <p>
+    Our mission at Ecstatic Beauty Bar is to provide highly skilled, personalized service through teamwork. 
+    We ensure our clients are always number one, and we strive to exceed your expectations.
+  </p>
+</section>
+<section id="services">
+  <h3>Our Services</h3>
+
+<!-- Main Video -->
+<div class="main-video">
+  <video autoplay muted loop playsinline preload="auto">
+    <source src="./rhulane.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+  <!-- Image Services -->
+  <div class="services">
+    <div class="card" data-service="Hair Styling">
+      <img src="rhulane4.jpg" alt="Hair Styling">
+      <p>Hair Styling</p>
+    </div>
+
+    <div class="card" data-service="Nails">
+      <img src="rhulane2.jpg" alt="Nails">
+      <p>Nails</p>
+    </div>
+
+    <div class="card" data-service="Makeup">
+      <img src="rhulane5.jpg" alt="Makeup">
+      <p>Makeup</p>
+    </div>
+
+    <div class="card" data-service="Lashes & Brows">
+      <img src="rhulane3.jpg" alt="Lashes & Brows">
+      <p>Lashes & Brows</p>
+    </div>
+  </div>
+</section>
+
+<section id="booking" class="booking">
+  <h3>Book Appointment</h3>
+  <form class="booking-form" onsubmit="submitBooking(event)">
+    <div class="input-box"><i class="fas fa-user"></i><input id="name" placeholder="Your Name" required></div>
+    <div class="input-box"><i class="fas fa-phone"></i><input id="phone" placeholder="Phone Number" required></div>
+    <div class="input-box"><i class="fas fa-spa"></i>
+      <select id="service" required>
+        <option value="">Select Service</option>
+        <option>Hair Styling</option>
+        <option>Nails</option>
+        <option>Makeup</option>
+        <option>Lashes & Brows</option>
+      </select>
+    </div>
+    <div class="input-box"><i class="fas fa-calendar-day"></i><input type="date" id="date" required></div>
+    <div class="input-box"><i class="fas fa-clock"></i><input type="time" id="time" required></div>
+    <button class="btn-book" id="bookBtn"><i class="fab fa-whatsapp"></i> Confirm & Pay</button>
+  </form>
+
+  <!-- Hidden admin input -->
+  <div id="adminInput">
+    <input type="password" id="adminCode" placeholder="Enter Admin Code">
+    <button class="btn" onclick="openAdmin()">Enter</button>
+  </div>
+
+  <!-- Admin panel -->
+  <div id="adminPanel">
+    <h3>🔒 Admin Panel</h3>
+    <button onclick="clearBookings()">🗑 Clear All Bookings</button>
+    <button onclick="exportCSV()">📥 Export CSV</button>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Phone</th><th>Service</th><th>Date</th><th>Time</th><th>Action</th></tr>
+      </thead>
+      <tbody id="bookingTableBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<footer id="contact">
+  <p>Ecstatic Beauty Bar</p>
+  <p>Mon–Sat · 08:00 – 18:00</p>
+  <p>WhatsApp: 072 812 5469</p>
+</footer>
+
+<script>
+(() => {
+  const OPEN_TIME = "08:00", CLOSE_TIME = "18:00";
+  const nameInput = document.getElementById("name"), phoneInput = document.getElementById("phone"),
+        serviceInput = document.getElementById("service"), dateInput = document.getElementById("date"),
+        timeInput = document.getElementById("time"), bookBtn = document.getElementById("bookBtn");
+  const adminCodeInput = document.getElementById("adminCode"), adminPanel = document.getElementById("adminPanel");
+  const adminTableBody = document.getElementById("bookingTableBody");
+
+  // NAV & scroll
+  const sections = document.querySelectorAll("section"), navItems = document.querySelectorAll("nav ul li");
+  window.addEventListener("scroll", () => {
+    const scrollPos = window.scrollY + 100;
+    sections.forEach((sec, i) => {
+      if (scrollPos >= sec.offsetTop && scrollPos < sec.offsetTop + sec.offsetHeight) {
+        navItems.forEach(n => n.classList.remove("active"));
+        if (navItems[i]) navItems[i].classList.add("active");
+      }
+    });
+  });
+
+  window.scrollToSection = id => document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  window.openWhatsApp = () => window.open("https://wa.me/27728125469", "_blank");
+
+  // Service click
+  document.querySelectorAll(".card").forEach(c => c.addEventListener("click", () => { if (serviceInput) serviceInput.value = c.dataset.service; window.scrollToSection('booking'); }));
+
+  // Date & time
+  const today = new Date().toISOString().split("T")[0];
+  if (dateInput) { dateInput.value = today; dateInput.min = today; }
+  if (timeInput) { timeInput.min = OPEN_TIME; timeInput.max = CLOSE_TIME; }
+
+  // Booking submission
+  window.submitBooking = e => {
+    e.preventDefault();
+    if (!nameInput || !phoneInput || !serviceInput || !dateInput || !timeInput || !bookBtn) return;
+
+    bookBtn.classList.add("loading");
+    bookBtn.innerHTML = "⏳ Processing...";
+
+    const booking = {
+      name: nameInput.value.trim(),
+      phone: phoneInput.value.trim(),
+      service: serviceInput.value,
+      date: dateInput.value,
+      time: timeInput.value,
+      timestamp: new Date().toISOString()
+    };
+
+    let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+
+    const conflict = bookings.some(b => b.date === booking.date && b.time === booking.time);
+    if (conflict) {
+      alert("⏰ This slot is already booked.");
+      bookBtn.classList.remove("loading");
+      bookBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Confirm & Pay';
+      return;
+    }
+
+    bookings.push(booking);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+
+    // Compose a complete, encoded WhatsApp message
+    const message = `Hello Ecstatic Beauty Bar 💎
+📌 New Booking
+👤 Name: ${booking.name}
+📞 Phone: ${booking.phone}
+💅 Service: ${booking.service}
+📅 Date: ${booking.date}
+⏰ Time: ${booking.time}
+`;
+
+    window.open(`https://wa.me/27728125469?text=${encodeURIComponent(message)}`, "_blank");
+
+    setTimeout(() => {
+      bookBtn.classList.remove("loading");
+      bookBtn.innerHTML = '<i class="fab fa-whatsapp"></i> Confirm & Pay';
+    }, 1000);
+  };
+
+  // Admin logic
+  const ADMIN_CODE = "noloBoss";
+  window.openAdmin = () => {
+    if (!adminCodeInput) return;
+    if (adminCodeInput.value === ADMIN_CODE) {
+      if (adminPanel) adminPanel.style.display = "block";
+      adminCodeInput.value = "";
+      updateAdminTable();
+    } else alert("❌ Wrong admin code");
+  };
+
+  window.clearBookings = () => {
+    if (confirm("Delete all bookings?")) { localStorage.removeItem("bookings"); updateAdminTable(); }
+  };
+
+  function updateAdminTable() {
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    if (!adminTableBody) return;
+    adminTableBody.innerHTML = "";
+    bookings.forEach((b, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${b.name}</td><td>${b.phone}</td><td>${b.service}</td><td>${b.date}</td><td>${b.time}</td>` +
+        `<td><button onclick="deleteBooking(${i})">Delete</button></td>`;
+      adminTableBody.appendChild(tr);
+    });
+  }
+
+  window.deleteBooking = i => {
+    let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    bookings.splice(i, 1);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+    updateAdminTable();
+  };
+
+  window.exportCSV = () => {
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    if (!bookings.length) { alert("No bookings to export"); return; }
+    const csvContent = "data:text/csv;charset=utf-8," +
+      ["Name,Phone,Service,Date,Time"].join(",") + "\n" +
+      bookings.map(b => `${b.name},${b.phone},${b.service},${b.date},${b.time}`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri); link.setAttribute("download", "bookings.csv");
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  };
+
+  // Hidden admin input trigger
+  const logo = document.getElementById("logo");
+  if (logo) logo.addEventListener("click", () => { const adminInput = document.getElementById("adminInput"); if (adminInput) adminInput.style.display = "block"; });
+
+  // Pause/play videos out of view (handles the main video as well)
+  const videos = document.querySelectorAll("video");
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.target && e.target.tagName === 'VIDEO') {
+        !e.isIntersecting ? e.target.pause() : e.target.play();
+      }
+    });
+  }, { threshold: 0.5 });
+  videos.forEach(v => observer.observe(v));
+
+  // Mission section fade-in
+  const missionSection = document.getElementById("mission");
+  const missionObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        missionObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  if (missionSection) missionObserver.observe(missionSection);
+
+})();
+</script>
+</body>
+</html
